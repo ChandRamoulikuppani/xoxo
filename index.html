@@ -317,11 +317,11 @@
 
         function askChangePlayers() {
             document.getElementById('overlay').style.display = 'flex';
+            document.getElementById('gameContainer').style.display = 'none';
         }
 
         function resetToPlayerNames() {
             document.getElementById('overlay').style.display = 'none';
-            document.getElementById('gameContainer').style.display = 'none';
             document.getElementById('nameInputContainer').style.display = 'flex';
             gamesPlayed = 0;
             document.getElementById('restartButton').style.display = 'none';
@@ -329,18 +329,17 @@
 
         function resetToGameCount() {
             document.getElementById('overlay').style.display = 'none';
-            document.getElementById('restartButton').style.display = 'none';
-            gamesPlayed = 0;
             document.getElementById('gameCountContainer').style.display = 'flex';
+            document.getElementById('gameContainer').style.display = 'none'; // Hide the game board
+            document.getElementById('restartButton').style.display = 'none';
         }
 
         // Loading screen functionality
         window.addEventListener('load', () => {
-        setTimeout(() => {
-            document.getElementById('loadingScreen').style.display = 'none';
-        }, 5000); // 5-second delay
-    });
+            setTimeout(() => {
+                document.getElementById('loadingScreen').style.display = 'none';
+            }, 5000); // 5-second delay
+        });
     </script>
 </body>
 </html>
-
