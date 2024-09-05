@@ -336,9 +336,10 @@
 
         // Loading screen functionality
         window.addEventListener('load', () => {
+        setTimeout(() => {
             document.getElementById('loadingScreen').style.display = 'none';
-            
-        });
+        }, 5000); // 5-second delay
+    });
     </script>
 </body>
 </html>
