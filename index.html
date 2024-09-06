@@ -147,7 +147,7 @@
 
     <div class="container" id="gameCountContainer" style="display: none;">
         <label for="gameCount">How many games do you want to play?</label>
-        <input type="number" id="gameCount" min="1" value="1" onkeydown="if(event.key === 'Enter') startGame()">
+        <input type="number" id="gameCount" onkeydown="if(event.key === 'Enter') startGame()">
         <br><br>
         <button onclick="startGame()">Start Game</button>
     </div>
@@ -193,6 +193,7 @@
             ['', '', '']
         ];
         let gameActive = true;
+        let player1Wins = 0, player2Wins = 0, draws = 0;
 
         function nextStep() {
             player1Name = document.getElementById('player1').value;
@@ -235,38 +236,44 @@
         }
 
         function makeMove(cell, row, col) {
-            if (!gameActive || board[row][col] !== '') {
-                return;
-            }
+            if (!gameActive || board[row][col] !== '') return;
 
             board[row][col] = currentPlayer;
             cell.textContent = currentPlayer;
 
             if (currentPlayer === 'X') {
-                cell.style.color = '#ecebe4'; // X color
+                cell.style.color = '#ecebe4';
             } else {
-                cell.style.color = '#cc998d'; // O color
+                cell.style.color = '#cc998d';
             }
 
             if (checkWinner()) {
                 gameActive = false;
                 document.getElementById('status').textContent = `${currentPlayer === 'X' ? player1Name : player2Name} Wins!`;
+                if (currentPlayer === 'X') {
+                    player1Wins++;
+                } else {
+                    player2Wins++;
+                }
                 gamesPlayed++;
                 setTimeout(() => {
                     if (gamesPlayed < numberOfGames) {
                         resetBoard();
                     } else {
+                        displayOverallWinner();
                         document.getElementById('restartButton').style.display = 'block';
                     }
-                }, 2000); // 2 seconds delay before next game
+                }, 2000);
             } else if (isBoardFull()) {
                 gameActive = false;
                 document.getElementById('status').textContent = "It's a Draw!";
+                draws++;
                 gamesPlayed++;
                 setTimeout(() => {
                     if (gamesPlayed < numberOfGames) {
                         resetBoard();
                     } else {
+                        displayOverallWinner();
                         document.getElementById('restartButton').style.display = 'block';
                     }
                 }, 2000);
@@ -274,6 +281,28 @@
                 currentPlayer = currentPlayer === 'X' ? 'O' : 'X';
                 updateTurn();
             }
+        }
+
+        function checkWinner() {
+            const winningCombinations = [
+                [[0, 0], [0, 1], [0, 2]],
+                [[1, 0], [1, 1], [1, 2]],
+                [[2, 0], [2, 1], [2, 2]],
+                [[0, 0], [1, 0], [2, 0]],
+                [[0, 1], [1, 1], [2, 1]],
+                [[0, 2], [1, 2], [2, 2]],
+                [[0, 0], [1, 1], [2, 2]],
+                [[0, 2], [1, 1], [2, 0]]
+            ];
+
+            return winningCombinations.some(combination => {
+                const [a, b, c] = combination;
+                return board[a[0]][a[1]] !== '' && board[a[0]][a[1]] === board[b[0]][b[1]] && board[a[0]][a[1]] === board[c[0]][c[1]];
+            });
+        }
+
+        function isBoardFull() {
+            return board.every(row => row.every(cell => cell !== ''));
         }
 
         function resetBoard() {
@@ -284,62 +313,57 @@
             ];
             const cells = document.querySelectorAll('.cell');
             cells.forEach(cell => cell.textContent = '');
-            currentPlayer = 'X';
+            currentPlayer = gamesPlayed % 2 === 0 ? 'X' : 'O';
             gameActive = true;
             document.getElementById('status').textContent = '';
             updateTurn();
             updateGamesLeft();
         }
 
-        function checkWinner() {
-            const winningCombinations = [
-                [ [0, 0], [0, 1], [0, 2] ],
-                [ [1, 0], [1, 1], [1, 2] ],
-                [ [2, 0], [2, 1], [2, 2] ],
-                [ [0, 0], [1, 0], [2, 0] ],
-                [ [0, 1], [1, 1], [2, 1] ],
-                [ [0, 2], [1, 2], [2, 2] ],
-                [ [0, 0], [1, 1], [2, 2] ],
-                [ [0, 2], [1, 1], [2, 0] ]
-            ];
+        function displayOverallWinner() {
+            let overallStatus = '';
 
-            return winningCombinations.some(combination => {
-                const [a, b, c] = combination;
-                return board[a[0]][a[1]] !== '' &&
-                       board[a[0]][a[1]] === board[b[0]][b[1]] &&
-                       board[a[0]][a[1]] === board[c[0]][c[1]];
-            });
-        }
+            if (player1Wins > player2Wins) {
+                overallStatus = `${player1Name} is the overall winner!`;
+            } else if (player2Wins > player1Wins) {
+                overallStatus = `${player2Name} is the overall winner!`;
+            } else {
+                overallStatus = "It's a Draw!";
+            }
 
-        function isBoardFull() {
-            return board.every(row => row.every(cell => cell !== ''));
+            document.getElementById('status').textContent = overallStatus;
         }
 
         function askChangePlayers() {
             document.getElementById('overlay').style.display = 'flex';
-            document.getElementById('gameContainer').style.display = 'none';
+            document.getElementById('gameContainer').style.display = 'none'; // Hide the game matrix
         }
 
         function resetToPlayerNames() {
             document.getElementById('overlay').style.display = 'none';
             document.getElementById('nameInputContainer').style.display = 'flex';
             gamesPlayed = 0;
+            player1Wins = 0;
+            player2Wins = 0;
+            draws = 0;
             document.getElementById('restartButton').style.display = 'none';
         }
 
         function resetToGameCount() {
             document.getElementById('overlay').style.display = 'none';
             document.getElementById('gameCountContainer').style.display = 'flex';
-            document.getElementById('gameContainer').style.display = 'none'; // Hide the game board
+            gamesPlayed = 0;
+            player1Wins = 0;
+            player2Wins = 0;
+            draws = 0;
             document.getElementById('restartButton').style.display = 'none';
         }
 
-        // Loading screen functionality
-        window.addEventListener('load', () => {
+        window.onload = function() {
             setTimeout(() => {
                 document.getElementById('loadingScreen').style.display = 'none';
-            }, 5000); // 5-second delay
-        });
+            }, 2000); // 2 seconds delay for the loading screen
+        };
     </script>
 </body>
 </html>
